@@ -2,8 +2,6 @@ var fc = require('fc')
 var vec2 = require('vec2')
 var center = require('ctx-translate-center')
 
-
-
 function drawBoat(ctx, boat) {
   ctx.save()
     ctx.translate(boat.center.x, boat.center.y)
@@ -51,6 +49,14 @@ function drawBoat(ctx, boat) {
   ctx.restore();
 }
 
+function drawVortex (x, y) {
+  ctx.save()
+    ctx.beginPath()
+      ctx.arc(x, y, 50, 0, 2*Math.PI, false)
+    ctx.stroke()
+    ctx.fill()
+  ctx.restore()
+}
 
 var waterDrag = .98;
 var boat = {
@@ -66,6 +72,7 @@ var boat = {
 }
 var impulse = vec2(5.0, 0.0)
 var impulseRotation = Math.PI/10
+var vortex = vec2(-500, 500)
 
 var ctx = fc(function tick() {
   ctx.clear('hsl(216, 73%, 65%)')
@@ -73,6 +80,7 @@ var ctx = fc(function tick() {
     center(ctx)
     ctx.scale(.25, .25)
     drawBoat(ctx, boat)
+    drawVortex(vortex.x, vortex.y)
 
     boat.center.add(boat.velocity)
 
@@ -82,7 +90,11 @@ var ctx = fc(function tick() {
     }
     boat.velocity.multiply(drag)
 
-
+    // calculate vortex force on boat
+    var suck = boat.center.subtract(vortex, true)
+    suck.normalize(false)
+    suck.multiply(0.1)
+    boat.velocity.subtract(suck)
 
   ctx.restore()
 }, true)
