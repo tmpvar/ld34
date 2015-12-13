@@ -12,7 +12,7 @@ function drawBoat(ctx, boat) {
 }
 
 
-var waterDrag = .988;
+var waterDrag = .899;
 var boat = {
   center: vec2(0, 0),
   rotation: 0,
