@@ -1,7 +1,7 @@
 var fc = require('fc')
 var vec2 = require('vec2')
 var center = require('ctx-translate-center')
-
+var createFishSchool = require('./fish.js')
 function drawBoat(ctx, boat) {
   ctx.save()
     ctx.translate(boat.center.x, boat.center.y)
@@ -74,6 +74,8 @@ var impulse = vec2(5.0, 0.0)
 var impulseRotation = Math.PI/10
 var vortex = vec2(-500, 500)
 
+var fish = createFishSchool(1000)
+
 var ctx = fc(function tick() {
   ctx.clear('hsl(216, 73%, 65%)')
   ctx.save()
@@ -95,6 +97,13 @@ var ctx = fc(function tick() {
     suck.normalize(false)
     suck.multiply(0.1)
     boat.velocity.subtract(suck)
+
+    fish.tick()
+    fish.attractors[0] = [boat.center.x, boat.center.y, 1000, -1]
+    ctx.fillStyle = "hsl(224, 23%, 35%)"
+    fish.boids.forEach(function(boid) {
+      ctx.fillRect(boid[0], boid[1], 10, 10)
+    })
 
   ctx.restore()
 }, true)

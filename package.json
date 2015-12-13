@@ -3,6 +3,7 @@
     "dev": "budo main.js --live --open"
   },
   "dependencies": {
+    "boids": "^1.0.0",
     "budo": "^7.0.2",
     "ctx-translate-center": "^1.0.0",
     "fc": "^1.4.3",
