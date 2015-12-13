@@ -3,6 +3,38 @@ var vec2 = require('vec2')
 var center = require('ctx-translate-center')
 var circle = require('ctx-circle')
 
+
+function gen_stats(x,y){
+  return{
+    timeStart:Date.now(),
+    score:0,
+    health:100,
+    ship:"ROWBOAT",
+    multiplier:0,
+    x:x||0,
+    y:y||0,
+    render:function(ctx){
+      ctx.font = "100px sans-serif";
+      ctx.fillStyle= "hsla(200,100%,50%,1.5)"
+      ctx.fillText("SHIP: ",this.x,this.y+100)
+      ctx.fillText("HEALTH:",this.x,this.y+250)
+      ctx.fillText("SCORE:",this.x,this.y+365)
+      ctx.fillStyle= "hsla(200,100%,50%,0.5)"
+      ctx.fillText(this.ship,this.x+300,this.y+100)
+      ctx.fillText("+"+this.health,this.x+600,this.y+250)
+      ctx.fillRect(this.x,this.y+265,lerp(0,830,this.health/100),20)
+      ctx.fillText(this.score,this.x+760,this.y+365)
+      ctx.font = "50px sans-serif";
+      ctx.fillStyle= "hsla(200,50%,80%,1.0)"
+      ctx.fillText("x",this.x,this.y+420)
+      ctx.font = "100px sans-serif";
+      ctx.fillText(this.multiplier,this.x+50,this.y+480)
+    }
+  }
+}
+var stats = gen_stats(-3200,-1600)
+
+
 var bubbles = [] 
 for (var i = 0; i < 100; i++) {
   bubbles.push( bubble(Math.random()*5000-2500,Math.random()*5000-2500) )
@@ -189,6 +221,7 @@ var ctx = fc(function tick() {
     fish.boids.forEach(function(boid) {
       ctx.fillRect(boid[0], boid[1], 10, 10)
     })
+    stats.render(ctx)
 
   ctx.restore()
 }, true)
