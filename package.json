@@ -1,1 +1,12 @@
-{}
+{
+  "scripts": {
+    "dev": "budo main.js --live --open"
+  },
+  "dependencies": {
+    "budo": "^7.0.2",
+    "ctx-translate-center": "^1.0.0",
+    "fc": "^1.4.3",
+    "polygon": "^1.0.2",
+    "vec2": "^1.6.0"
+  }
+}
