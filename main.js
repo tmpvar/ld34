@@ -10,13 +10,13 @@ function drawBoat(ctx, boat) {
     ctx.rotate(boat.rotation)
 
     ctx.save()
-      ctx.scale(.25, .25)
+      ctx.scale(.65, .65)
       ctx.drawImage(boat.img, -(boat.img.width/2)|0, -(boat.img.height/2)|0)
     ctx.restore()
 
     ctx.save()
       if (boat.paddles[0]) {
-        ctx.rotate(.5)
+        ctx.rotate(-Math.PI/4)
       }
       ctx.beginPath()
         ctx.moveTo(0, 0)
@@ -25,6 +25,8 @@ function drawBoat(ctx, boat) {
         ctx.arcTo(10, 150, -20, 100, 10)
         ctx.lineTo(-10, 100)
         ctx.lineTo(0, 50)
+      ctx.fillStyle = boat.paddles[0] ? 'hsl(216, 73%, 40%)' : 'hsl(24, 60%, 41%)'
+      ctx.strokeStyle = boat.paddles[0] ? 'hsl(216, 73%, 40%)' : 'hsl(24, 60%, 41%)'
       ctx.fill()
       ctx.stroke()
     ctx.restore()
@@ -40,17 +42,17 @@ function drawBoat(ctx, boat) {
         ctx.arcTo(10, -150, -20, -100, 10)
         ctx.lineTo(-10, -100)
         ctx.lineTo(0, -50)
+      ctx.fillStyle = boat.paddles[1] ? 'hsl(216, 73%, 40%)' : 'hsl(24, 60%, 41%)'
+      ctx.strokeStyle = boat.paddles[1] ? 'hsl(216, 73%, 40%)' : 'hsl(24, 60%, 41%)'
       ctx.stroke()
       ctx.fill()
     ctx.restore()
 
-    // ctx.fillStyle = "brown"
-    // ctx.fillRect(-25, -10, 50, 20)
   ctx.restore();
 }
 
 
-var waterDrag = .899;
+var waterDrag = .98;
 var boat = {
   center: vec2(0, 0),
   rotation: 0,
@@ -69,11 +71,18 @@ var ctx = fc(function tick() {
   ctx.clear('hsl(216, 73%, 65%)')
   ctx.save()
     center(ctx)
-    ctx.scale(.5, .5)
+    ctx.scale(.25, .25)
     drawBoat(ctx, boat)
 
     boat.center.add(boat.velocity)
-    boat.velocity.multiply(waterDrag)
+
+    var drag = waterDrag
+    if (boat.paddles[0] && boat.paddles[1]) {
+      drag -= .05
+    }
+    boat.velocity.multiply(drag)
+
+
 
   ctx.restore()
 }, true)
@@ -97,14 +106,16 @@ window.addEventListener('keyup', function(ev) {
     // left shift
     if (ev.location === 1) {
       boat.paddles[0] = 0
-      boat.rotation -= impulseRotation;
-      boat.velocity.rotate(-impulseRotation).add(impulse.rotate(impulseRotation, true))
+      var rimp = !boat.paddles[1] ? impulseRotation/2 : impulseRotation * 2;
+      boat.rotation -= rimp
+      boat.velocity.rotate(-rimp).add(impulse.rotate(rimp, true))
 
     // right shift
     } else if (ev.location === 2) {
       boat.paddles[1] = 0
-      boat.rotation += impulseRotation;
-      boat.velocity.rotate(impulseRotation).add(impulse.rotate(-impulseRotation, true))
+      var rimp = !boat.paddles[0] ? impulseRotation/2 : impulseRotation * 2
+      boat.rotation += rimp;
+      boat.velocity.rotate(rimp).add(impulse.rotate(-rimp, true))
     }
     ctx.dirty()
   }
