@@ -1,6 +1,83 @@
 var fc = require('fc')
 var vec2 = require('vec2')
 var center = require('ctx-translate-center')
+var circle = require('ctx-circle')
+
+var bubbles = [] 
+for (var i = 0; i < 100; i++) {
+  bubbles.push( bubble(Math.random()*5000-2500,Math.random()*5000-2500) )
+}
+var secondaryBubbles = []
+
+function lerp(a,b,f){
+  return( (b*f)+(a-(a*f)) )
+}
+function degreeToRadian(x){
+  return( x*(Math.PI/180) )
+}
+function bubble(x,y){
+  return{
+    x:x,
+    y:y,
+    created: Date.now()+ Math.random()*3000,
+    expire: 2500+Math.random()*2500,
+    render:function(ctx){
+      if(Date.now()<this.created){return}//not created yet
+      var fraction = (Date.now()-this.created) / this.expire
+      if(fraction>=1){//if dead
+          //add surface bubbles:
+            for (var i = 0; i < 5; i++) {
+              secondaryBubbles.push(surfaceBubble(this.x,this.y))
+            };
+          this.x=Math.random()*5000-2500
+          this.y=Math.random()*5000-2500
+          this.created= Date.now()+ Math.random()*3000
+          this.expire= 2500+Math.random()*250
+          return;
+      }
+      ctx.beginPath()
+      circle(ctx, this.x, this.y,  lerp(2,5,fraction) );
+      //ctx.arc(x,y,10,0,2*Math.PI);
+      ctx.closePath()      
+      ctx.fillStyle = "hsla(200,"+lerp(100,10+(Math.random()*70),fraction)+"%,"+lerp(10+(Math.random()*10),100,fraction)+"%,0.5)";
+      ctx.strokeStyle = "hsla(200,"+lerp(100,80,fraction)+"%,"+lerp(10,100,fraction)+"%,0.8)";
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+}
+function surfaceBubble(x,y){
+  return{
+    x:x,
+    y:y,
+    v:Math.random(),
+    r:Math.random()*360,
+    created: Date.now()+ Math.random()*150,
+    expire: 2500+Math.random()*150,
+    render:function(ctx){
+      if(Date.now()<this.created){return}//not created yet
+      var fraction = (Date.now()-this.created) / this.expire
+      if(fraction>=1){//if dead
+          //TODO: remove from array
+          var index = secondaryBubbles.indexOf(this)
+          secondaryBubbles.splice(index, 1)
+          return;
+      }
+
+      //update coordinates
+      this.x = this.x+(Math.cos(degreeToRadian(this.r))*this.v)
+      this.y = this.y+(Math.sin(degreeToRadian(this.r))*this.v)
+      ctx.beginPath()
+      circle(ctx, this.x, this.y,  lerp(2,1,fraction) );
+      //ctx.arc(x,y,10,0,2*Math.PI);
+      ctx.closePath()      
+      ctx.fillStyle = "hsla(200,"+lerp(100,50,fraction)+"%,"+lerp(100,80,fraction)+"%,0.5)";
+      ctx.strokeStyle = "hsla(200,"+lerp(100,80,fraction)+"%,"+lerp(100,70,fraction)+"%,0.8)";
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+}
 
 function drawBoat(ctx, boat) {
   ctx.save()
@@ -52,12 +129,12 @@ function drawBoat(ctx, boat) {
 function drawVortex (x, y) {
   ctx.save()
     ctx.beginPath()
+      ctx.fillStyle = "hsl(200,0%,0%)";
       ctx.arc(x, y, 50, 0, 2*Math.PI, false)
-    ctx.stroke()
+    //ctx.stroke()
     ctx.fill()
   ctx.restore()
 }
-
 var waterDrag = .98;
 var boat = {
   center: vec2(0, 0),
@@ -75,12 +152,20 @@ var impulseRotation = Math.PI/10
 var vortex = vec2(-500, 500)
 
 var ctx = fc(function tick() {
-  ctx.clear('hsl(216, 73%, 65%)')
+  ctx.clear('hsl(216, 73%, 30%)')
   ctx.save()
     center(ctx)
     ctx.scale(.25, .25)
-    drawBoat(ctx, boat)
+    //bubbles! (RH2 testing)
+    for (var i = 0; i < bubbles.length; i++) {
+      bubbles[i].render(ctx)
+    };
+    for (var i = 0; i < secondaryBubbles.length; i++) {
+      secondaryBubbles[i].render(ctx)
+    };
+
     drawVortex(vortex.x, vortex.y)
+    drawBoat(ctx, boat)
 
     boat.center.add(boat.velocity)
 
@@ -95,6 +180,7 @@ var ctx = fc(function tick() {
     suck.normalize(false)
     suck.multiply(0.1)
     boat.velocity.subtract(suck)
+
 
   ctx.restore()
 }, true)
